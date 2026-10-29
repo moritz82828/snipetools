@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>snipetools</title>
+<meta name="description" content="snipetools – Werkzeuge für dein Vinted-Reselling. Läuft komplett lokal im Browser.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f2f7">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="snipetools">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<noscript><p class="noscript">snipetools benötigt JavaScript.</p></noscript>
+
+<!-- ======================= Login ======================= -->
+<main id="screen-login" class="screen screen-login" hidden>
+  <header class="topbar">
+    <span class="topbar-title">snipetools.de</span>
+  </header>
+
+  <div class="page page-login">
+    <h1 class="large-title">Login</h1>
+
+    <form id="login-form" novalidate autocomplete="on">
+      <div class="card">
+        <div class="field">
+          <label class="sr-only" for="username">Benutzername</label>
+          <input id="username" name="username" type="text" placeholder="Benutzername"
+                 autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+        </div>
+        <div class="field">
+          <label class="sr-only" for="password">Passwort</label>
+          <input id="password" name="password" type="password" placeholder="Passwort"
+                 autocomplete="current-password" required>
+          <button type="button" class="icon-btn" id="toggle-password" aria-label="Passwort anzeigen" aria-pressed="false">
+            <svg class="icon-eye" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg class="icon-eye-off" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 3l18 18"/>
+              <path d="M10.6 5.8A10.6 10.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.9"/>
+              <path d="M6.4 6.6A16.8 16.8 0 0 0 2.5 12s3.5 6.5 9.5 6.5c1.5 0 2.8-.4 4-1"/>
+              <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <p id="login-error" class="error" role="alert" aria-live="assertive" hidden></p>
+
+      <button id="login-button" type="submit" class="btn btn-primary">
+        <span class="btn-label">Login</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+  </div>
+</main>
+
+<!-- ======================= App ======================= -->
+<div id="screen-app" class="screen" hidden>
+
+  <!-- home -->
+  <section class="tab-panel" data-panel="home">
+    <div class="page">
+      <h1 class="large-title">Hallo, <span id="home-name"></span></h1>
+
+      <h2 class="section-title"><span id="home-month"></span></h2>
+      <div class="card dash">
+        <div class="dash-top">
+          <span class="dash-label">Saldo</span>
+          <span id="dash-saldo" class="dash-value">0,00 €</span>
+        </div>
+        <div class="dash-bar" aria-hidden="true"><span id="dash-bar-in"></span></div>
+        <div class="dash-row">
+          <span class="dash-key"><i class="dot dot-in"></i>Einnahmen</span>
+          <span id="dash-in" class="dash-num amount-in">0,00 €</span>
+        </div>
+        <div class="dash-row">
+          <span class="dash-key"><i class="dot dot-out"></i>Ausgaben</span>
+          <span id="dash-out" class="dash-num amount-out">0,00 €</span>
+        </div>
+        <p id="dash-empty" class="dash-empty" hidden>In diesem Monat ist noch nichts eingetragen.</p>
+      </div>
+
+      <h2 class="section-title"><span>Zuletzt</span></h2>
+      <div id="home-recent" class="card list"></div>
+    </div>
+  </section>
+
+  <!-- snipebot -->
+  <section class="tab-panel" data-panel="snipebot" hidden>
+    <div class="page">
+      <div class="title-row">
+        <h1 class="large-title">Snipebot</h1>
+        <button type="button" id="snipebot-settings" class="icon-btn icon-btn-large" aria-label="Snipebot-Einstellungen">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3.2"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.12-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.57 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.85a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08A1.7 1.7 0 0 0 10.12 2.9V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08A1.7 1.7 0 0 0 21.1 10.12H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.88z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="card bot-status">
+        <div class="bot-status-main">
+          <span id="bot-dot" class="bot-dot is-off" aria-hidden="true"></span>
+          <div class="bot-status-text">
+            <div id="bot-state" class="bot-state">Nicht verbunden</div>
+            <div id="bot-detail" class="bot-detail">Vinted-Tab mit dem Lesezeichen starten</div>
+          </div>
+        </div>
+        <button type="button" id="bot-toggle" class="btn-small btn-small-primary">Starten</button>
+      </div>
+
+      <button type="button" id="snipebot-filter" class="card filter-btn">
+        <span class="filter-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7h10M18 7h2M4 17h4M12 17h8"/>
+            <circle cx="16" cy="7" r="2.2"/>
+            <circle cx="10" cy="17" r="2.2"/>
+          </svg>
+        </span>
+        <span class="filter-text">
+          <span class="filter-title">Filter</span>
+          <span id="filter-summary" class="filter-summary">Neueste zuerst</span>
+        </span>
+        <span class="chevron" aria-hidden="true">›</span>
+      </button>
+
+      <button type="button" id="snipebot-setup" class="card filter-btn">
+        <span class="filter-icon filter-icon-gray" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4.2-6.5 4.2v-16a1 1 0 0 1 1-1z"/>
+          </svg>
+        </span>
+        <span class="filter-text">
+          <span class="filter-title">Lesezeichen</span>
+          <span id="setup-summary" class="filter-summary">Einmalig einrichten</span>
+        </span>
+        <span class="chevron" aria-hidden="true">›</span>
+      </button>
+
+      <div id="bot-message" class="card bot-message" hidden></div>
+
+      <div id="bot-grid" class="grid" aria-live="polite"></div>
+      <p id="bot-footnote" class="foot-note" hidden>Angebote werden nur angezeigt, nicht gespeichert.</p>
+    </div>
+  </section>
+
+  <!-- tracking -->
+  <section class="tab-panel" data-panel="tracking" hidden>
+    <div class="page">
+      <h1 class="large-title">Tracking</h1>
+
+      <div class="type-buttons">
+        <button type="button" class="type-btn type-in" data-type="in">
+          <span class="type-sign" aria-hidden="true">+</span>
+          <span class="type-text">Einnahme</span>
+        </button>
+        <button type="button" class="type-btn type-out" data-type="out">
+          <span class="type-sign" aria-hidden="true">−</span>
+          <span class="type-text">Ausgabe</span>
+        </button>
+      </div>
+
+      <div id="history"></div>
+    </div>
+  </section>
+
+  <!-- inventar -->
+  <section class="tab-panel" data-panel="inventar" hidden>
+    <div class="page">
+      <h1 class="large-title">Inventar</h1>
+      <div class="card">
+        <p class="empty">Dein Inventar ist noch leer.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- konto -->
+  <section class="tab-panel" data-panel="konto" hidden>
+    <div class="page">
+      <h1 class="large-title">Konto</h1>
+      <div class="card">
+        <div class="row">
+          <span>Benutzername</span>
+          <span id="konto-user" class="value"></span>
+        </div>
+        <div class="row">
+          <span>Subscription</span>
+          <span id="konto-sub" class="badge"></span>
+        </div>
+      </div>
+      <div class="card">
+        <button id="logout-button" type="button" class="cell-btn cell-btn-danger">Logout</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ======================= Tab-Leiste (immer unten) ======================= -->
+<nav class="tabbar" aria-label="Hauptnavigation" hidden>
+  <button type="button" class="tab-item is-active" data-tab="home" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3.5 11.5 12 4l8.5 7.5"/>
+      <path d="M5.5 10v9.5h4.5V14h4v5.5h4.5V10"/>
+    </svg>
+    <span>Home</span>
+  </button>
+  <button type="button" class="tab-item" data-tab="snipebot">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="7"/>
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>
+    </svg>
+    <span>Snipebot</span>
+  </button>
+  <button type="button" class="tab-item" data-tab="tracking">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M17.6 7.4A6.6 6.6 0 1 0 17.6 16.6"/>
+      <path d="M4 10.3h9.5M4 13.7h9.5"/>
+    </svg>
+    <span>Tracking</span>
+  </button>
+  <button type="button" class="tab-item" data-tab="inventar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M16 4l4 2.5-1.8 3.5L16 9v10H8V9l-2.2 1L4 6.5 8 4a4 4 0 0 0 8 0z"/>
+    </svg>
+    <span>Inventar</span>
+  </button>
+  <button type="button" class="tab-item" data-tab="konto">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.6"/>
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+    </svg>
+    <span>Konto</span>
+  </button>
+</nav>
+
+<!-- ======================= Sheet: Einnahme / Ausgabe ======================= -->
+<div id="sheet-backdrop" class="sheet-backdrop" hidden></div>
+<form id="entry-sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" novalidate hidden>
+  <div class="grabber" aria-hidden="true"></div>
+  <header class="sheet-header">
+    <button type="button" class="text-btn" id="sheet-cancel">Abbrechen</button>
+    <h2 id="sheet-title">Einnahme</h2>
+    <span></span>
+  </header>
+
+  <div class="card card-elevated">
+    <label class="field field-labeled">
+      <span class="field-label">Betrag</span>
+      <input id="entry-amount" class="input-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" enterkeyhint="next">
+      <span class="field-suffix">€</span>
+    </label>
+    <label class="field field-labeled">
+      <span class="field-label">Wofür</span>
+      <input id="entry-note" type="text" placeholder="z. B. Nike Dunk Low" autocomplete="off" enterkeyhint="done">
+    </label>
+    <label class="field field-labeled">
+      <span class="field-label">Datum</span>
+      <input id="entry-date" type="date" required>
+    </label>
+  </div>
+
+  <p id="entry-error" class="error" role="alert" hidden></p>
+
+  <button id="entry-save" type="submit" class="btn btn-in">Speichern</button>
+  <button id="entry-delete" type="button" class="btn btn-plain btn-danger" hidden>Eintrag löschen</button>
+</form>
+
+<!-- ======================= Sheet: Snipebot-Einstellungen ======================= -->
+<form id="settings-sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title" novalidate hidden>
+  <div class="grabber" aria-hidden="true"></div>
+  <header class="sheet-header">
+    <button type="button" class="text-btn" id="settings-cancel">Abbrechen</button>
+    <h2 id="settings-title">Snipebot</h2>
+    <button type="submit" class="text-btn text-btn-strong">Fertig</button>
+  </header>
+
+  <h3 class="sheet-section">Suche</h3>
+  <div class="card card-elevated">
+    <div class="row row-stack">
+      <span>Intervall</span>
+      <div id="set-interval" class="segmented" role="group" aria-label="Intervall">
+        <button type="button" data-value="15">15 s</button>
+        <button type="button" data-value="30">30 s</button>
+        <button type="button" data-value="60">1 min</button>
+        <button type="button" data-value="120">2 min</button>
+        <button type="button" data-value="300">5 min</button>
+      </div>
+    </div>
+    <div class="row row-stack">
+      <span>Angebote pro Suche</span>
+      <div id="set-perpage" class="segmented" role="group" aria-label="Angebote pro Suche">
+        <button type="button" data-value="20">20</button>
+        <button type="button" data-value="40">40</button>
+        <button type="button" data-value="96">96</button>
+      </div>
+    </div>
+    <label class="row">
+      <span>Vinted-Seite</span>
+      <select id="set-domain" class="select"></select>
+    </label>
+  </div>
+  <p class="sheet-hint">Kurze Intervalle fallen Vinted schneller auf. Am PC drosselt der Browser Hintergrund-Tabs auf etwa eine Suche pro Minute – für kürzere Intervalle den Vinted-Tab als eigenes Fenster sichtbar lassen.</p>
+
+  <h3 class="sheet-section">Angebote</h3>
+  <div class="card card-elevated">
+    <label class="row">
+      <span class="row-text">Details nachladen<small>Beschreibung, Kategorie, alle Fotos – mehr Anfragen</small></span>
+      <span class="switch"><input id="set-details" type="checkbox"><span class="switch-track" aria-hidden="true"></span></span>
+    </label>
+  </div>
+
+  <h3 class="sheet-section">Hinweise bei neuen Angeboten</h3>
+  <div class="card card-elevated">
+    <label class="row">
+      <span class="row-text">Benachrichtigung<small>von snipetools, am PC</small></span>
+      <span class="switch"><input id="set-notify" type="checkbox"><span class="switch-track" aria-hidden="true"></span></span>
+    </label>
+    <label class="row">
+      <span class="row-text">Ton<small>im Vinted-Tab</small></span>
+      <span class="switch"><input id="set-sound" type="checkbox"><span class="switch-track" aria-hidden="true"></span></span>
+    </label>
+  </div>
+
+  <h3 class="sheet-section">Verbindung</h3>
+  <div class="card card-elevated">
+    <div class="row">
+      <span>Vinted-Tab</span>
+      <span id="set-connection" class="value">–</span>
+    </div>
+    <div class="row row-stack">
+      <span>Diagnose</span>
+      <pre id="set-diag" class="diag">Noch keine Rückmeldung vom Vinted-Tab.</pre>
+      <button type="button" id="set-diag-copy" class="btn-small btn-small-plain" hidden>Diagnose kopieren</button>
+    </div>
+  </div>
+
+  <p id="settings-error" class="error" role="alert" hidden></p>
+</form>
+
+<!-- ======================= Sheet: Lesezeichen einrichten ======================= -->
+<div id="setup-sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="setup-title" hidden>
+  <div class="grabber" aria-hidden="true"></div>
+  <header class="sheet-header">
+    <span></span>
+    <h2 id="setup-title">Lesezeichen</h2>
+    <button type="button" class="text-btn text-btn-strong" id="setup-done">Fertig</button>
+  </header>
+
+  <p class="sheet-intro">Der Snipebot läuft in einem Vinted-Tab und sucht von dort aus – mit deinem Browser und deiner Vinted-Sitzung, ohne Server. Gestartet wird er mit einem Lesezeichen, das du einmal anlegst.</p>
+
+  <div id="setup-device" class="segmented segmented-wide" role="group" aria-label="Gerät">
+    <button type="button" data-value="ios">iPhone / iPad</button>
+    <button type="button" data-value="pc">PC</button>
+  </div>
+
+  <ol class="steps" data-device="ios">
+    <li><span>Unten auf <strong>Code kopieren</strong> tippen.</span></li>
+    <li><span>In Safari diese Seite als Lesezeichen sichern: Teilen-Symbol → <strong>Lesezeichen hinzufügen</strong>, Name „snipetools“.</span></li>
+    <li><span>Lesezeichen-Symbol (aufgeschlagenes Buch) → <strong>Bearbeiten</strong> → „snipetools“ antippen → die Adresse komplett löschen und den kopierten Code einfügen → Fertig.</span></li>
+    <li><span>Snipebot starten: in snipetools auf <strong>Starten</strong> tippen, im Vinted-Tab die Adresszeile antippen und das Lesezeichen „snipetools“ wählen.</span></li>
+  </ol>
+
+  <ol class="steps" data-device="pc" hidden>
+    <li><span>Lesezeichenleiste einblenden (Strg+Umschalt+B bzw. ⌘+Umschalt+B).</span></li>
+    <li><span>Den blauen Knopf <strong>snipetools</strong> unten mit der Maus in die Lesezeichenleiste ziehen.</span></li>
+    <li><span>Snipebot starten: in snipetools auf <strong>Starten</strong> klicken, im neuen Vinted-Tab auf das Lesezeichen klicken. Die Angebote erscheinen dann hier in snipetools.</span></li>
+  </ol>
+
+  <div class="card card-elevated bm-box">
+    <a id="bm-link" class="bm-link" href="#" draggable="true">snipetools</a>
+    <textarea id="bm-code" class="bm-code" readonly rows="3" aria-label="Lesezeichen-Code" spellcheck="false"></textarea>
+    <button type="button" id="bm-copy" class="btn btn-primary">Code kopieren</button>
+    <p id="bm-info" class="sheet-hint bm-info"></p>
+  </div>
+
+  <p class="sheet-hint">Nach einem Update von snipetools zeigt der Snipebot „Lesezeichen veraltet“ – dann den Code einfach neu kopieren und im Lesezeichen ersetzen.</p>
+</div>
+
+<!-- ======================= Sheet: Filter ======================= -->
+<form id="filter-sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="filter-title" novalidate hidden>
+  <div class="grabber" aria-hidden="true"></div>
+  <header class="sheet-header">
+    <button type="button" class="text-btn" id="filter-cancel">Abbrechen</button>
+    <h2 id="filter-title">Filter</h2>
+    <span></span>
+  </header>
+
+  <div class="card card-elevated">
+    <label class="field field-labeled">
+      <span class="field-label">Suche</span>
+      <input id="f-search" type="search" placeholder="z. B. Nike Dunk" autocomplete="off" enterkeyhint="done">
+    </label>
+  </div>
+
+  <h3 class="sheet-section">IDs aus der Vinted-URL</h3>
+  <div class="card card-elevated">
+    <label class="field field-labeled">
+      <span class="field-label">Marken</span>
+      <input id="f-brands" type="text" inputmode="numeric" placeholder="53, 14" autocomplete="off">
+    </label>
+    <label class="field field-labeled">
+      <span class="field-label">Kategorien</span>
+      <input id="f-catalogs" type="text" inputmode="numeric" placeholder="1904" autocomplete="off">
+    </label>
+    <label class="field field-labeled">
+      <span class="field-label">Größen</span>
+      <input id="f-sizes" type="text" inputmode="numeric" placeholder="207, 208" autocomplete="off">
+    </label>
+  </div>
+  <p class="sheet-hint">Filter auf Vinted einstellen und aus der Adresszeile ablesen: brand_ids[]=53 (Nike), catalog[]=1904, size_ids[]=207. Mehrere IDs mit Komma trennen.</p>
+
+  <h3 class="sheet-section">Preis</h3>
+  <div class="card card-elevated">
+    <label class="field field-labeled">
+      <span class="field-label">Preis ab</span>
+      <input id="f-price-from" class="input-amount" type="text" inputmode="decimal" placeholder="0" autocomplete="off">
+      <span class="field-suffix">€</span>
+    </label>
+    <label class="field field-labeled">
+      <span class="field-label">Preis bis</span>
+      <input id="f-price-to" class="input-amount" type="text" inputmode="decimal" placeholder="∞" autocomplete="off">
+      <span class="field-suffix">€</span>
+    </label>
+  </div>
+
+  <h3 class="sheet-section">Zustand</h3>
+  <div id="f-conditions" class="chips" role="group" aria-label="Zustand">
+    <button type="button" class="chip" data-value="6" aria-pressed="false">Neu mit Etikett</button>
+    <button type="button" class="chip" data-value="1" aria-pressed="false">Neu ohne Etikett</button>
+    <button type="button" class="chip" data-value="2" aria-pressed="false">Sehr gut</button>
+    <button type="button" class="chip" data-value="3" aria-pressed="false">Gut</button>
+    <button type="button" class="chip" data-value="4" aria-pressed="false">Zufriedenstellend</button>
+  </div>
+
+  <h3 class="sheet-section">Sortierung</h3>
+  <div id="f-order" class="segmented segmented-wide" role="group" aria-label="Sortierung">
+    <button type="button" data-value="newest_first">Neueste</button>
+    <button type="button" data-value="price_low_to_high">Günstigste</button>
+    <button type="button" data-value="relevance">Relevanz</button>
+  </div>
+
+  <p id="filter-error" class="error" role="alert" hidden></p>
+
+  <button type="submit" class="btn btn-primary">Filter anwenden</button>
+  <button type="button" id="f-open" class="btn btn-plain">Suche auf Vinted öffnen</button>
+  <button type="button" id="f-reset" class="btn btn-plain btn-danger">Zurücksetzen</button>
+</form>
+
+<!-- ======================= Nur ein Tab pro Account ======================= -->
+<div id="lock" class="lock" hidden>
+  <div class="lock-box">
+    <h2>In einem anderen Tab geöffnet</h2>
+    <p>snipetools läuft pro Account nur in einem Tab gleichzeitig. Der andere Tab ist gerade aktiv.</p>
+    <button id="lock-use" type="button" class="btn btn-primary">Hier verwenden</button>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

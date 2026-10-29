@@ -1,0 +1,23 @@
+# ==========================================================
+#  snipetools – Accounts
+# ==========================================================
+#
+#  Eine Zeile pro Account, drei Felder getrennt durch |
+#
+#      benutzername | passwort-hash | subscription
+#
+#  - Passwort-Hash mit account-generator.html erzeugen
+#    (lokal im Browser öffnen, nichts wird hochgeladen).
+#    Niemals ein Klartext-Passwort eintragen: diese Datei
+#    ist öffentlich abrufbar.
+#  - subscription: derzeit nur "free".
+#    Fehlt das Feld, gilt "free".
+#  - Groß-/Kleinschreibung beim Benutzernamen ist egal.
+#  - Leere Zeilen und Zeilen mit # werden ignoriert.
+#  - Account entfernen oder Hash ändern => Nutzer wird beim
+#    nächsten Aufruf der App abgemeldet.
+#
+# ----------------------------------------------------------
+
+# Demo-Zugang (Passwort: snipetools) – bitte löschen!
+demo | pbkdf2$600000$t0ZtHN1JGad2eRcDPZOu2g==$ADElQS4TQeDXiQ/SiYHIdjhNKdFLQVZHri2FySdtitw= | free
